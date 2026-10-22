@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Surya AI | Portfolio Assistant</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="chat-container">
+    <header class="chat-header">
+      <div class="avatar">S</div>
+      <div>
+        <h1>Surya AI</h1>
+        <p>Professional Portfolio & GitHub Assistant</p>
+      </div>
+    </header>
+
+    <section class="chat-messages" id="chatMessages"
+             aria-label="Conversation"
+             aria-live="polite">
+      <div class="message bot">
+        Hi! I'm Surya AI.
+
+        Ask me about Surya's professional experience,
+        technical skills, AI projects, or GitHub repositories.
+      </div>
+    </section>
+
+    <form class="chat-input" id="chatForm">
+      <input
+        type="text"
+        id="userInput"
+        placeholder="Ask me anything about Surya..."
+        aria-label="Your message"
+        autocomplete="off"
+        required
+      >
+      <button type="submit">Send</button>
+    </form>
+
+    <footer>
+      <a href="https://suryark88.github.io/"
+         target="_blank" rel="noopener noreferrer">
+        Portfolio
+      </a>
+      <span>•</span>
+      <a href="https://github.com/suryark88"
+         target="_blank" rel="noopener noreferrer">
+        GitHub
+      </a>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
