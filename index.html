@@ -9,10 +9,12 @@
 
   <meta
     name="description"
-    content="Surya's AI Assistance - Explore professional experience, technical skills, AI automation projects, and GitHub repositories."
+    content="Surya's AI Assistance - Explore professional experience, technical skills, AI integration projects, and GitHub repositories."
   >
 
+  <!-- Existing Dark Theme -->
   <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
@@ -37,6 +39,7 @@
       id="chatMessages"
       aria-label="Conversation"
       aria-live="polite"
+      aria-relevant="additions text"
     >
 
       <div class="message bot">
@@ -44,7 +47,8 @@
 
         I'm here to help you learn more about Surya's
         professional experience, technical expertise,
-        AI automation projects, and GitHub repositories.
+        AI Integration, automation projects,
+        and GitHub repositories.
 
         How can I help you today?
       </div>
@@ -105,9 +109,21 @@
 
   </main>
 
-  <!-- Chatbot Functionality -->
- <script src="profile-loader.js"></script>
-<script src="script.js"></script>
+  <!-- Markdown Parser -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js">
+  </script>
+
+  <!-- HTML Sanitizer -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js">
+  </script>
+
+  <!-- Public Profile Loader -->
+  <script src="profile-loader.js"></script>
+
+  <!-- Groq AI Chatbot -->
+  <script src="script.js?v=3"></script>
 
 </body>
 </html>
