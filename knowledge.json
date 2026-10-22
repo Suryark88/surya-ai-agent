@@ -1,0 +1,95 @@
+
+{
+  "assistant": {
+    "name": "Surya's AI Assistance",
+    "purpose": "Professional portfolio and project assistant",
+    "instructions": "Answer questions about Surya's professional background, skills, and public projects using verified information. Do not invent experience, achievements, or project outcomes."
+  },
+  "profile": {
+    "name": "Surya Ram Kumar",
+    "current_role": "Operations Manager",
+    "experience": "13+ years",
+    "specializations": [
+      "SaaS Service Delivery Management",
+      "IT Operations",
+      "IT Service Management",
+      "Customer Success",
+      "AI Integration",
+      "Generative AI",
+      "Agentic AI",
+      "Workflow Automation"
+    ],
+    "technical_skills": [
+      "Power Automate",
+      "Office Scripts",
+      "Microsoft Azure",
+      "Power BI",
+      "Snowflake",
+      "Python",
+      "Model Context Protocol (MCP)",
+      "GitHub",
+      "Hugging Face"
+    ]
+  },
+  "public_profiles": {
+    "github": {
+      "username": "suryark88",
+      "url": "https://github.com/suryark88",
+      "api": "https://api.github.com/users/suryark88/repos?per_page=100"
+    },
+    "huggingface": {
+      "username": "suryakumar-ai",
+      "url": "https://huggingface.co/suryakumar-ai",
+      "spaces_api": "https://huggingface.co/api/spaces?author=suryakumar-ai"
+    },
+    "linkedin": {
+      "url": "https://www.linkedin.com/in/suryanagarajan/",
+      "retrieval": "Approved profile export or manually maintained professional information"
+    },
+    "portfolio": {
+      "url": "https://suryark88.github.io/"
+    }
+  },
+  "projects": [
+    {
+      "name": "Archware Post-Patch Reporting Automation",
+      "category": "IT Operations Automation",
+      "summary": "Automated post-patch reporting using Power Automate, CSV processing, SharePoint, and HTML email summaries.",
+      "status": "Implemented"
+    },
+    {
+      "name": "Centralized NOC Post-Patch Reporting Automation",
+      "category": "Enterprise Workflow Automation",
+      "summary": "Proposed centralized reporting architecture for approximately 300 NOC accounts using account identifiers, SharePoint mapping, and automated customer reporting.",
+      "status": "Proposed"
+    },
+    {
+      "name": "SDM Intelligence Agent",
+      "category": "AI Integration",
+      "summary": "AI agent project focused on supporting service delivery intelligence and operational workflows.",
+      "status": "Project"
+    },
+    {
+      "name": "Weekly Patch Compliance Reporting",
+      "category": "Reporting Automation",
+      "summary": "Automation workflows for generating recurring patch compliance reports using Excel, Office Scripts, and Power Automate.",
+      "status": "Project"
+    },
+    {
+      "name": "Surya's AI Assistance",
+      "category": "AI Portfolio Assistant",
+      "summary": "GitHub Pages chatbot designed to explain professional experience, technical skills, and public projects.",
+      "status": "Rule-based version live; LLM integration planned"
+    }
+  ],
+  "privacy": {
+    "public_information_only": true,
+    "exclude": [
+      "Customer-identifying operational records",
+      "Internal company documentation",
+      "API keys and access tokens",
+      "Private repositories",
+      "Confidential project information"
+    ]
+  }
+}
