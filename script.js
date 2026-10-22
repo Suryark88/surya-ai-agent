@@ -1,11 +1,33 @@
 
+/*
+ * Surya's AI Assistance
+ * Professional Portfolio & GitHub Assistant
+ *
+ * Uses:
+ * - knowledge.json
+ * - Public GitHub repositories
+ * - Public Hugging Face Spaces
+ *
+ * This version uses knowledge-based responses.
+ * LLM integration will be added separately.
+ */
+
 const chatForm = document.getElementById("chatForm");
 const userInput = document.getElementById("userInput");
 const chatMessages = document.getElementById("chatMessages");
 const sendButton = document.getElementById("sendButton");
 
-const githubUsername = "suryark88";
+let suryaProfileData = null;
+let profileLoadingPromise = null;
 
+const FALLBACK_LINKS = {
+  portfolio: "https://suryark88.github.io/",
+  github: "https://github.com/suryark88",
+  huggingface: "https://huggingface.co/suryakumar-ai",
+  linkedin: "https://www.linkedin.com/in/suryanagarajan/"
+};
+
+// Display chat messages safely.
 function addMessage(text, sender) {
   const message = document.createElement("div");
 
@@ -18,147 +40,283 @@ function addMessage(text, sender) {
   return message;
 }
 
-async function getGitHubProjects() {
+// Initialize the professional profile loader.
+async function initializeProfileKnowledge() {
+  if (!window.SuryaProfileLoader) {
+    console.warn("Profile loader not available.");
+    return null;
+  }
+
   try {
-    const response = await fetch(
-      `https://api.github.com/users/${githubUsername}/repos?per_page=100&sort=updated`
-    );
+    suryaProfileData =
+      await window.SuryaProfileLoader.loadAllProfileData();
 
-    if (!response.ok) {
-      throw new Error("GitHub API unavailable");
-    }
+    console.log("Professional profile data loaded");
 
-    const repositories = await response.json();
-
-    const projects = repositories
-      .filter(repo => !repo.fork && !repo.archived)
-      .filter(repo => repo.name !== githubUsername)
-      .slice(0, 8);
-
-    if (projects.length === 0) {
-      return "No public original repositories found yet.";
-    }
-
-    return (
-      "Here are some of Surya's public GitHub projects:\n\n" +
-      projects.map(repo =>
-        `${repo.name}\n${repo.description || "No description available."}\n${repo.html_url}`
-      ).join("\n\n")
-    );
+    return suryaProfileData;
 
   } catch (error) {
-    return (
-      "I couldn't retrieve GitHub projects right now. " +
-      "You can explore them at https://github.com/suryark88"
-    );
+    console.warn("Profile initialization failed:", error);
+    return null;
   }
 }
 
-async function getResponse(question) {
-  const text = question.toLowerCase();
-
-  if (
-    text.includes("github") ||
-    text.includes("repository") ||
-    text.includes("repositories") ||
-    text.includes("code")
-  ) {
-    return await getGitHubProjects();
+// Load profile information only once per page visit.
+function ensureProfileKnowledge() {
+  if (!profileLoadingPromise) {
+    profileLoadingPromise = initializeProfileKnowledge();
   }
 
-  if (
-    text.includes("project") ||
-    text.includes("automation")
-  ) {
+  return profileLoadingPromise;
+}
+
+// Retrieve the approved knowledge base.
+function getKnowledge() {
+  return suryaProfileData?.knowledge || {};
+}
+
+// Retrieve profile links.
+function getProfileLinks() {
+  const profiles = getKnowledge().public_profiles || {};
+
+  return {
+    portfolio: profiles.portfolio?.url || FALLBACK_LINKS.portfolio,
+    github: profiles.github?.url || FALLBACK_LINKS.github,
+    huggingface:
+      profiles.huggingface?.url || FALLBACK_LINKS.huggingface,
+    linkedin: profiles.linkedin?.url || FALLBACK_LINKS.linkedin
+  };
+}
+
+// Answer professional experience questions.
+function getExperienceResponse() {
+  const profile = getKnowledge().profile;
+
+  if (!profile) {
     return (
-      "Surya has worked on several IT automation and AI projects:\n\n" +
-      "1. Archware Post-Patch Reporting Automation\n" +
-      "2. Centralized NOC Post-Patch Reporting Automation\n" +
-      "3. SDM Intelligence Agent\n" +
-      "4. Weekly Patch Compliance Reporting\n" +
-      "5. VSA 10 Multi-Account Patch Analytics\n\n" +
-      "Explore his GitHub: https://github.com/suryark88"
+      "Surya Ram Kumar is an Operations Manager with " +
+      "13+ years of experience in SaaS Service Delivery, " +
+      "IT Operations, Customer Success, and AI Integration."
     );
   }
 
-  if (
-    text.includes("experience") ||
-    text.includes("about surya") ||
-    text.includes("who is surya")
-  ) {
-    
-return (
-  "Surya Ram Kumar is an Operations Manager with " +
-  "13+ years of experience across SaaS Service Delivery, " +
-  "IT Operations, ITSM, Customer Success, and AI Integration.\n\n" +
-  "His work focuses on operational efficiency, " +
-  "service management, AI integration, intelligent automation, " +
-  "and developing AI-driven solutions to simplify IT operations."
-);
+  const specializations =
+    profile.specializations?.join(", ") || "";
 
-  }
+  return (
+    `${profile.name || "Surya Ram Kumar"} is an ` +
+    `${profile.current_role || "Operations Manager"} ` +
+    `with ${profile.experience || "13+ years"} of experience.\n\n` +
+    `His areas of expertise include:\n${specializations}\n\n` +
+    "His professional focus includes service delivery, " +
+    "operational efficiency, AI Integration, " +
+    "intelligent automation, and improving IT operations."
+  );
+}
 
-  if (
-    text.includes("skill") ||
-    text.includes("technology") ||
-    text.includes("expertise")
-  ) {
+// Answer technical skills questions.
+function getSkillsResponse() {
+  const profile = getKnowledge().profile;
+
+  const skills = profile?.technical_skills || [];
+
+  if (!skills.length) {
     return (
-      "Surya's technical expertise includes:\n\n" +
-      "AI: Generative AI, Agentic AI, MCP\n" +
-      "Automation: Power Automate, Office Scripts\n" +
-      "Data: Snowflake, Power BI, Excel\n" +
-      "IT Operations: SaaS, ITSM, RMM, BCDR\n" +
-      "Cloud: Microsoft Azure"
-    );
-  }
-
-  if (
-    text.includes("portfolio") ||
-    text.includes("website")
-  ) {
-    return (
-      "You can explore Surya's professional portfolio here:\n" +
-      "https://suryark88.github.io/"
-    );
-  }
-
-  if (
-    text.includes("contact") ||
-    text.includes("linkedin") ||
-    text.includes("hire")
-  ) {
-    return (
-      "You can connect with Surya through his portfolio:\n" +
-      "https://suryark88.github.io/\n\n" +
-      "GitHub: https://github.com/suryark88"
-    );
-  }
-
-  if (
-    text.includes("hello") ||
-    text.includes("hi") ||
-    text.includes("hey")
-  ) {
-    return (
-      "Hello! I'm Surya's AI Assistance.\n\n" +
-      "You can ask me about his professional experience, " +
-      "technical skills, automation projects, " +
-      "or GitHub repositories."
+      "Surya's expertise includes SaaS Service Delivery, " +
+      "IT Operations, Generative AI, Agentic AI, " +
+      "AI Integration, Power Automate, and MCP."
     );
   }
 
   return (
-    "I can help you learn about Surya's experience, " +
-    "skills, AI automation projects, and GitHub work.\n\n" +
-    "Try asking:\n" +
-    "- Tell me about Surya's experience\n" +
-    "- What are his technical skills?\n" +
-    "- What projects has he worked on?\n" +
-    "- Show his GitHub repositories"
+    "Surya's technical skills include:\n\n" +
+    skills.map(skill => `• ${skill}`).join("\n")
   );
 }
 
+// Retrieve projects from knowledge.json.
+function getProfessionalProjects() {
+  const projects = getKnowledge().projects || [];
+
+  if (!projects.length) {
+    return (
+      "Surya works on IT Operations, reporting automation, " +
+      "AI Integration, and service delivery intelligence projects."
+    );
+  }
+
+  return (
+    "Here are Surya's professional projects:\n\n" +
+    projects.map((project, index) => {
+      return (
+        `${index + 1}. ${project.name}\n` +
+        `${project.summary || ""}\n` +
+        `Status: ${project.status || "Not specified"}`
+      );
+    }).join("\n\n")
+  );
+}
+
+// Display live GitHub repositories.
+function getGitHubProjects() {
+  const repositories = suryaProfileData?.github || [];
+
+  if (!repositories.length) {
+    return (
+      "GitHub project information is currently unavailable.\n\n" +
+      FALLBACK_LINKS.github
+    );
+  }
+
+  return (
+    "Here are Surya's public GitHub repositories:\n\n" +
+    repositories.slice(0, 12).map((repo, index) => {
+      return (
+        `${index + 1}. ${repo.name}\n` +
+        `${repo.description || "No description available."}\n` +
+        `Language: ${repo.language || "Not specified"}\n` +
+        `${repo.url}`
+      );
+    }).join("\n\n")
+  );
+}
+
+// Display live Hugging Face Spaces.
+function getHuggingFaceProjects() {
+  const spaces = suryaProfileData?.huggingface || [];
+
+  if (!spaces.length) {
+    return (
+      "No public Hugging Face Spaces were retrieved.\n\n" +
+      "Visit: " + FALLBACK_LINKS.huggingface
+    );
+  }
+
+  return (
+    "Here are Surya's public Hugging Face AI projects:\n\n" +
+    spaces.map((space, index) => {
+      return (
+        `${index + 1}. ${space.name}\n` +
+        `${space.description || "No description available."}\n` +
+        `${space.url}`
+      );
+    }).join("\n\n")
+  );
+}
+
+// Display professional profile links.
+function getContactResponse() {
+  const links = getProfileLinks();
+
+  return (
+    "You can explore Surya's professional profiles:\n\n" +
+    `Portfolio: ${links.portfolio}\n` +
+    `LinkedIn: ${links.linkedin}\n` +
+    `GitHub: ${links.github}\n` +
+    `Hugging Face: ${links.huggingface}`
+  );
+}
+
+// Respond to visitor questions.
+async function getResponse(question) {
+  await ensureProfileKnowledge();
+
+  const text = question.toLowerCase().trim();
+
+  // Hugging Face and AI Spaces
+  if (
+    text.includes("hugging face") ||
+    text.includes("huggingface") ||
+    text.includes("ai space") ||
+    text.includes("spaces")
+  ) {
+    return getHuggingFaceProjects();
+  }
+
+  // GitHub repositories
+  if (
+    text.includes("github") ||
+    text.includes("repository") ||
+    text.includes("repositories") ||
+    text.includes("source code")
+  ) {
+    return getGitHubProjects();
+  }
+
+  // Professional projects
+  if (
+    text.includes("project") ||
+    text.includes("automation") ||
+    text.includes("post-patch") ||
+    text.includes("patch reporting") ||
+    text.includes("sdm intelligence")
+  ) {
+    return getProfessionalProjects();
+  }
+
+  // Professional experience
+  if (
+    text.includes("experience") ||
+    text.includes("about surya") ||
+    text.includes("who is surya") ||
+    text.includes("career") ||
+    text.includes("operations manager") ||
+    text.includes("background")
+  ) {
+    return getExperienceResponse();
+  }
+
+  // Skills and technologies
+  if (
+    text.includes("skill") ||
+    text.includes("technology") ||
+    text.includes("expertise") ||
+    text.includes("ai integration") ||
+    text.includes("agentic ai") ||
+    text.includes("generative ai") ||
+    text.includes("mcp")
+  ) {
+    return getSkillsResponse();
+  }
+
+  // Professional links
+  if (
+    text.includes("contact") ||
+    text.includes("linkedin") ||
+    text.includes("portfolio") ||
+    text.includes("website") ||
+    text.includes("hire") ||
+    text.includes("connect")
+  ) {
+    return getContactResponse();
+  }
+
+  // Greetings
+  if (/^(hi|hello|hey|good morning|good evening)[!.\s]*$/i.test(text)) {
+    return (
+      "Hello! I'm Surya's AI Assistance.\n\n" +
+      "I can help you explore Surya's professional experience, " +
+      "AI Integration skills, GitHub repositories, " +
+      "Hugging Face projects, and automation work.\n\n" +
+      "What would you like to know?"
+    );
+  }
+
+  // Default response
+  return (
+    "I'm Surya's AI Assistance.\n\n" +
+    "You can ask me about:\n\n" +
+    "• Professional experience and Operations Management\n" +
+    "• AI Integration and technical skills\n" +
+    "• Automation projects\n" +
+    "• GitHub repositories\n" +
+    "• Hugging Face AI projects\n" +
+    "• LinkedIn and portfolio information\n\n" +
+    "Try asking: What has Surya built on Hugging Face?"
+  );
+}
+
+// Handle chat submissions.
 chatForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -176,38 +334,23 @@ chatForm.addEventListener("submit", async (event) => {
 
   try {
     const answer = await getResponse(question);
+
     loadingMessage.textContent = answer;
+
   } catch (error) {
+    console.error("Chat response error:", error);
+
     loadingMessage.textContent =
-      "Sorry, something went wrong. Please try again.";
+      "Sorry, I couldn't process that question. " +
+      "Please try again.";
+
   } finally {
     userInput.disabled = false;
     sendButton.disabled = false;
     userInput.focus();
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
-  
 });
 
-/* Public profile data integration */
-
-let suryaProfileData = null;
-
-async function initializeProfileKnowledge() {
-  if (!window.SuryaProfileLoader) {
-    console.warn("Profile loader not available");
-    return;
-  }
-
-  try {
-    suryaProfileData =
-      await window.SuryaProfileLoader.loadAllProfileData();
-
-    console.log("Professional profile data loaded");
-  } catch (error) {
-    console.warn("Profile initialization failed:", error);
-  }
-}
-
-initializeProfileKnowledge();
-
+// Load professional information when the page opens.
+ensureProfileKnowledge();
