@@ -86,13 +86,16 @@ async function getResponse(question) {
     text.includes("about surya") ||
     text.includes("who is surya")
   ) {
-    return (
-      "Surya Ram Kumar is an Operations Manager with " +
-      "13+ years of experience across SaaS Service Delivery, " +
-      "IT Operations, ITSM, and Customer Success.\n\n" +
-      "His work focuses on operational efficiency, " +
-      "service management, and intelligent automation."
-    );
+    
+return (
+  "Surya Ram Kumar is an Operations Manager with " +
+  "13+ years of experience across SaaS Service Delivery, " +
+  "IT Operations, ITSM, Customer Success, and AI Integration.\n\n" +
+  "His work focuses on operational efficiency, " +
+  "service management, AI integration, intelligent automation, " +
+  "and developing AI-driven solutions to simplify IT operations."
+);
+
   }
 
   if (
