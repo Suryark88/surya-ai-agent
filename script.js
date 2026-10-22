@@ -7,14 +7,10 @@
  * Backend: Cloudflare Workers
  * Frontend: GitHub Pages
  *
- * Knowledge sources:
- * - Professional knowledge.json
- * - Public GitHub repositories
- * - Public Hugging Face Spaces
- * - Approved LinkedIn professional information
+ * Markdown: Marked + DOMPurify
  *
- * The Cloudflare Worker handles LLM inference
- * and professional knowledge retrieval.
+ * Knowledge retrieval is handled by the
+ * Cloudflare Worker.
  */
 
 // ==========================================
@@ -39,6 +35,10 @@ const AI_CONFIG = {
   linkedinUrl:
     "https://www.linkedin.com/in/suryanagarajan/",
 
+  email: "suryark@live.com",
+
+  phone: "+91 9538266771",
+
   requestTimeout: 45000,
 
   maxMessageLength: 1000
@@ -57,12 +57,19 @@ const sendButton = document.getElementById("sendButton");
 // CHAT MESSAGE DISPLAY
 // ==========================================
 
+function scrollToBottom() {
+  if (chatMessages) {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+}
+
 function addMessage(text, sender) {
   const message = document.createElement("div");
 
   message.className = `message ${sender}`;
 
-  // textContent prevents HTML injection.
+  // User messages and initial loading text
+  // are always inserted as plain text.
   message.textContent = text;
 
   chatMessages.appendChild(message);
@@ -72,12 +79,75 @@ function addMessage(text, sender) {
   return message;
 }
 
-function scrollToBottom() {
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+// ==========================================
+// SAFE MARKDOWN RENDERING
+// ==========================================
+
+function renderAIMessage(element, text) {
+  if (
+    typeof window.marked === "undefined" ||
+    typeof window.DOMPurify === "undefined"
+  ) {
+    console.warn(
+      "Markdown libraries unavailable. " +
+      "Displaying plain text."
+    );
+
+    element.textContent = text;
+    return;
+  }
+
+  try {
+    const html = window.marked.parse(text, {
+      gfm: true,
+      breaks: true
+    });
+
+    const sanitized = window.DOMPurify.sanitize(
+      html,
+      {
+        USE_PROFILES: {
+          html: true
+        }
+      }
+    );
+
+    element.innerHTML = sanitized;
+
+    // Open external links safely.
+    element.querySelectorAll("a").forEach(link => {
+      const href = link.getAttribute("href") || "";
+
+      if (
+        !href.startsWith("https://") &&
+        !href.startsWith("http://") &&
+        !href.startsWith("mailto:")
+      ) {
+        link.removeAttribute("href");
+        return;
+      }
+
+      link.setAttribute("target", "_blank");
+      link.setAttribute(
+        "rel",
+        "noopener noreferrer"
+      );
+    });
+
+  } catch (error) {
+    console.error(
+      "Markdown rendering failed:",
+      error
+    );
+
+    element.textContent = text;
+  }
+
+  scrollToBottom();
 }
 
 // ==========================================
-// OPTIONAL PROFILE DATA INITIALIZATION
+// OPTIONAL PROFILE INITIALIZATION
 // ==========================================
 
 let suryaProfileData = null;
@@ -86,7 +156,7 @@ async function initializeProfileKnowledge() {
   if (!window.SuryaProfileLoader) {
     console.info(
       "Profile loader unavailable. " +
-      "Hosted AI backend will handle knowledge retrieval."
+      "Cloudflare handles knowledge retrieval."
     );
 
     return;
@@ -109,7 +179,7 @@ async function initializeProfileKnowledge() {
 }
 
 // ==========================================
-// HOSTED LLM API
+// HOSTED GROQ LLM API
 // ==========================================
 
 async function getAIResponse(question) {
@@ -147,11 +217,11 @@ async function getAIResponse(question) {
       );
     }
 
-    // Groq free-tier rate limit.
+    // Groq or Cloudflare rate limit.
     if (response.status === 429) {
       return (
-        "Surya's AI Assistance has reached its " +
-        "temporary usage limit.\n\n" +
+        "Surya's AI Assistance has reached " +
+        "its temporary usage limit.\n\n" +
         "Please try again later."
       );
     }
@@ -186,6 +256,22 @@ async function getAIResponse(question) {
 }
 
 // ==========================================
+// CONTACT INFORMATION
+// ==========================================
+
+function getContactInformation() {
+  return (
+    "**Contact Surya Ram Kumar**\n\n" +
+    `- **Email:** [${AI_CONFIG.email}](mailto:${AI_CONFIG.email})\n` +
+    `- **Phone:** ${AI_CONFIG.phone}\n` +
+    `- **LinkedIn:** ${AI_CONFIG.linkedinUrl}\n` +
+    `- **Portfolio:** ${AI_CONFIG.portfolioUrl}\n` +
+    `- **GitHub:** ${AI_CONFIG.githubUrl}\n` +
+    `- **Hugging Face:** ${AI_CONFIG.huggingFaceUrl}`
+  );
+}
+
+// ==========================================
 // FALLBACK RESPONSES
 // ==========================================
 
@@ -196,14 +282,14 @@ function getFallbackResponse(question) {
     text.includes("contact") ||
     text.includes("connect") ||
     text.includes("linkedin") ||
-    text.includes("hire")
+    text.includes("hire") ||
+    text.includes("recruiter")
   ) {
     return (
-      "You can connect with Surya through:\n\n" +
-      `Portfolio: ${AI_CONFIG.portfolioUrl}\n` +
-      `LinkedIn: ${AI_CONFIG.linkedinUrl}\n` +
-      `GitHub: ${AI_CONFIG.githubUrl}\n` +
-      `Hugging Face: ${AI_CONFIG.huggingFaceUrl}`
+      "You can contact Surya directly " +
+      "for professional opportunities " +
+      "or additional information.\n\n" +
+      getContactInformation()
     );
   }
 
@@ -212,9 +298,11 @@ function getFallbackResponse(question) {
     text.includes("repository")
   ) {
     return (
-      "You can explore Surya's public GitHub " +
-      "repositories here:\n\n" +
-      AI_CONFIG.githubUrl
+      "You can explore Surya's public " +
+      "GitHub repositories here:\n\n" +
+      AI_CONFIG.githubUrl +
+      "\n\n" +
+      getContactInformation()
     );
   }
 
@@ -225,19 +313,19 @@ function getFallbackResponse(question) {
     return (
       "You can explore Surya's Hugging Face " +
       "AI projects here:\n\n" +
-      AI_CONFIG.huggingFaceUrl
+      AI_CONFIG.huggingFaceUrl +
+      "\n\n" +
+      getContactInformation()
     );
   }
 
   return (
-    "I'm temporarily unable to generate an " +
-    "AI-powered response.\n\n" +
-    "You can explore Surya's professional " +
-    "experience and projects through:\n\n" +
-    `Portfolio: ${AI_CONFIG.portfolioUrl}\n` +
-    `GitHub: ${AI_CONFIG.githubUrl}\n` +
-    `Hugging Face: ${AI_CONFIG.huggingFaceUrl}\n\n` +
-    "Please try your question again later."
+    "I'm temporarily unable to generate " +
+    "an AI-powered response to that question.\n\n" +
+    "For additional information about Surya's " +
+    "professional background, technical expertise, " +
+    "or availability, please contact him directly.\n\n" +
+    getContactInformation()
   );
 }
 
@@ -251,9 +339,14 @@ async function getResponse(question) {
 
   } catch (error) {
     if (error.name === "AbortError") {
-      console.warn("AI request timed out.");
+      console.warn(
+        "AI request timed out."
+      );
     } else {
-      console.error("AI request failed:", error);
+      console.error(
+        "AI request failed:",
+        error
+      );
     }
 
     return getFallbackResponse(question);
@@ -264,7 +357,12 @@ async function getResponse(question) {
 // CHAT SUBMISSION
 // ==========================================
 
-if (chatForm && userInput && chatMessages && sendButton) {
+if (
+  chatForm &&
+  userInput &&
+  chatMessages &&
+  sendButton
+) {
 
   chatForm.addEventListener(
     "submit",
@@ -307,7 +405,11 @@ if (chatForm && userInput && chatMessages && sendButton) {
       try {
         const answer = await getResponse(question);
 
-        loadingMessage.textContent = answer;
+        // Render AI-generated Markdown safely.
+        renderAIMessage(
+          loadingMessage,
+          answer
+        );
 
       } catch (error) {
         console.error(
@@ -315,8 +417,10 @@ if (chatForm && userInput && chatMessages && sendButton) {
           error
         );
 
-        loadingMessage.textContent =
-          getFallbackResponse(question);
+        renderAIMessage(
+          loadingMessage,
+          getFallbackResponse(question)
+        );
 
       } finally {
         userInput.disabled = false;
