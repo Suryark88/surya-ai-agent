@@ -186,4 +186,28 @@ chatForm.addEventListener("submit", async (event) => {
     userInput.focus();
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
+  
 });
+
+/* Public profile data integration */
+
+let suryaProfileData = null;
+
+async function initializeProfileKnowledge() {
+  if (!window.SuryaProfileLoader) {
+    console.warn("Profile loader not available");
+    return;
+  }
+
+  try {
+    suryaProfileData =
+      await window.SuryaProfileLoader.loadAllProfileData();
+
+    console.log("Professional profile data loaded");
+  } catch (error) {
+    console.warn("Profile initialization failed:", error);
+  }
+}
+
+initializeProfileKnowledge();
+
